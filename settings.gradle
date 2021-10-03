@@ -1,5 +1,2 @@
 rootProject.name = 'planner-backend'
-include 'db'
-include 'service'
-include 'di'
 

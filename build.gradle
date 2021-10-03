@@ -13,7 +13,3 @@ allprojects {
         mavenCentral()
     }
 }
-
-dependencies {
-    implementation(project(':di'))
-}
