@@ -6,10 +6,16 @@ allprojects {
 
     apply plugin: 'java'
 
-    group 'planner.backend'
+    group 'ru.vsu.backend'
     version '1.0-SNAPSHOT'
 
     repositories {
         mavenCentral()
     }
+}
+
+dependencies {
+    implementation (project(':ui'))
+    implementation (project(':di'))
+    implementation 'org.yaml:snakeyaml:1.29'
 }

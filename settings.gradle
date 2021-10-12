@@ -1,2 +1,6 @@
 rootProject.name = 'planner-backend'
+include 'dao'
+include 'di'
+include 'service'
+include 'ui'
 
