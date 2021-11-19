@@ -1,14 +1,13 @@
-package ru.vsu.UI.function.impl;
+package ru.vsu.UI.command.impl;
 
+import ru.vsu.UI.command.Command;
 import ru.vsu.UI.impl.ConsoleMenuUI;
 import ru.vsu.dao.entity.EventType;
 import ru.vsu.di.annotation.Component;
 import ru.vsu.di.annotation.InjectByType;
 
-import java.util.function.Function;
-
 @Component
-public class ExitFunction implements Function<EventType, Boolean> {
+public class ExitCommand implements Command<EventType, Boolean> {
 
     @InjectByType
     private ConsoleMenuUI ui;

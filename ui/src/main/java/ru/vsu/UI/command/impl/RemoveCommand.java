@@ -1,15 +1,14 @@
-package ru.vsu.UI.function.impl;
+package ru.vsu.UI.command.impl;
 
+import ru.vsu.UI.command.Command;
 import ru.vsu.UI.impl.DefaultConsoleUI;
 import ru.vsu.dao.entity.EventType;
 import ru.vsu.di.annotation.Component;
 import ru.vsu.di.annotation.InjectByType;
 import ru.vsu.service.EventService;
 
-import java.util.function.Function;
-
 @Component
-public class GetByIdFunction implements Function<EventType, Boolean> {
+public class RemoveCommand implements Command<EventType, Boolean> {
 
     @InjectByType
     private DefaultConsoleUI ui;
@@ -19,12 +18,13 @@ public class GetByIdFunction implements Function<EventType, Boolean> {
 
     @Override
     public Boolean apply(EventType eventType) {
-        ui.showMessage("Введите id события для просмотра\n");
+        ui.showMessage("Введите id события для удаления\n");
         try {
             String input = ui.getInput();
             int numberInput = Integer.parseInt(input);
-            ui.showMessage(service.findById(numberInput).toString());
-        } catch (Exception e) {
+            service.deleteById(numberInput);
+            ui.showMessage("Операция завершена\n");
+        } catch (NumberFormatException e) {
             ui.showException(e);
             apply(eventType);
         }

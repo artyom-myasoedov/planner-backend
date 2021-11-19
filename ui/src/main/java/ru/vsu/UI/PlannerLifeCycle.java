@@ -1,16 +1,20 @@
 package ru.vsu.UI;
 
+
+import ru.vsu.UI.command.Command;
 import ru.vsu.dao.entity.EventType;
+import ru.vsu.di.ApplicationRunner;
 import ru.vsu.di.annotation.Component;
 import ru.vsu.di.annotation.InjectByType;
 import ru.vsu.di.annotation.InjectFromProperties;
 import ru.vsu.di.annotation.PostConstruct;
 
 import java.util.Map;
-import java.util.function.Function;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @Component
-public class PlannerLifeCycle {
+public class PlannerLifeCycle implements ApplicationRunner {
 
     private boolean isRunning;
 
@@ -23,7 +27,7 @@ public class PlannerLifeCycle {
     private MenuUI ui;
 
     @InjectFromProperties
-    private Map<Action, Function<EventType, Boolean>> mainMenuFunctions;
+    private Map<Action, Command<EventType, Boolean>> mainMenuCommands;
 
 
     @PostConstruct
@@ -65,9 +69,10 @@ public class PlannerLifeCycle {
 
         ui.setMenuMessage(menuMessages.get(currEventType));
 
-        mainMenuFunctions.put(Action.CHANGE_CURRENT_EVENT_TYPE, new ChangeEventTypeFunction());
+        mainMenuCommands.put(Action.CHANGE_CURRENT_EVENT_TYPE, new ChangeEventTypeCommand());
     }
 
+    @Override
     public void start() {
         isRunning = true;
         String input;
@@ -80,24 +85,25 @@ public class PlannerLifeCycle {
                 try {
                     numberInput = Integer.parseInt(input);
                 } catch (Exception e) {
-                    throw new RuntimeException("Invalid input");
+                    throw new IllegalArgumentException("Invalid input: " + input);
                 }
 
-                if (currEventType.equals(EventType.ANY)) if (numberInput > 7)
-                    throw new RuntimeException("Invalid operation");
-                else numberInput += 2;
+                if (Objects.equals(EventType.ANY, currEventType))
+                    if (numberInput > 7)
+                        throw new IllegalArgumentException("Invalid operation: " + numberInput);
+                    else numberInput += 2;
 
+                int finalNumberInput = numberInput;
                 Action action = Action.fromInteger(numberInput)
-                        .orElseThrow(() -> new RuntimeException("There isn't such action"));
-                isRunning = mainMenuFunctions.get(action).apply(currEventType);
-            } catch (Exception e) {
+                        .orElseThrow(() -> new NoSuchElementException("There isn't such action: " + finalNumberInput));
+                isRunning = mainMenuCommands.get(action).apply(currEventType);
+            } catch (NoSuchElementException | IllegalArgumentException e) {
                 ui.showException(e);
             }
         }
     }
 
-    @Component
-    public class ChangeEventTypeFunction implements Function<EventType, Boolean> {
+    private class ChangeEventTypeCommand implements Command<EventType, Boolean> {
 
         private final String CHANGE_EVENT_TYPE_MESSAGE =
                 "---------- Выберите тип события ----------\n" +
@@ -116,13 +122,13 @@ public class PlannerLifeCycle {
                 try {
                     numberInput = Integer.parseInt(input);
                 } catch (Exception e) {
-                    throw new RuntimeException("Invalid input");
+                    throw new IllegalArgumentException("Invalid input: " + input);
                 }
 
                 currEventType = EventType.fromInteger(numberInput)
-                        .orElseThrow(() -> new RuntimeException("There isn't such EventType"));
+                        .orElseThrow(() -> new NoSuchElementException("There isn't such EventType: " + numberInput));
                 ui.setMenuMessage(menuMessages.get(currEventType));
-            } catch (Exception e) {
+            } catch (NoSuchElementException | IllegalArgumentException e) {
                 ui.showException(e);
                 apply(eventType);
             }

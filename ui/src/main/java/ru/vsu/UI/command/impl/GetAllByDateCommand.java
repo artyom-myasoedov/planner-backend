@@ -1,6 +1,7 @@
-package ru.vsu.UI.function.impl;
+package ru.vsu.UI.command.impl;
 
 import ru.vsu.UI.EntityCollectionUI;
+import ru.vsu.UI.command.Command;
 import ru.vsu.dao.entity.EventType;
 import ru.vsu.di.annotation.Component;
 import ru.vsu.di.annotation.InjectByType;
@@ -8,10 +9,11 @@ import ru.vsu.service.EventService;
 import ru.vsu.service.TimeComparisonOperation;
 
 import java.time.LocalDate;
-import java.util.function.Function;
+import java.time.format.DateTimeParseException;
+import java.util.NoSuchElementException;
 
 @Component
-public class GetAllByDateFunction implements Function<EventType, Boolean> {
+public class GetAllByDateCommand implements Command<EventType, Boolean> {
 
     @InjectByType
     private EntityCollectionUI ui;
@@ -31,7 +33,7 @@ public class GetAllByDateFunction implements Function<EventType, Boolean> {
         LocalDate localDate = null;
         try {
             localDate = LocalDate.parse(input);
-        } catch (Exception e) {
+        } catch (DateTimeParseException e) {
             ui.showException(e);
             apply(eventType);
         }
@@ -42,16 +44,21 @@ public class GetAllByDateFunction implements Function<EventType, Boolean> {
             input = ui.getInput();
             try {
                 numberInput = Integer.parseInt(input);
+                int finalNumberInput = numberInput;
                 TimeComparisonOperation operation = TimeComparisonOperation.fromInteger(numberInput)
-                        .orElseThrow(() -> new RuntimeException("There isn't such operation"));
+                        .orElseThrow(() -> new NoSuchElementException("There isn't such operation: " + finalNumberInput));
                 isChoosingOperation = false;
-                ui.showEntityCollection(service.findByDate(localDate.getYear(),
-                        localDate.getMonthValue(),
-                        localDate.getDayOfMonth(),
-                        EventType.toList(eventType),
-                        operation));
+                if (localDate != null) {
+                    ui.showEntityCollection(service.findByDate(localDate.getYear(),
+                            localDate.getMonthValue(),
+                            localDate.getDayOfMonth(),
+                            EventType.toList(eventType),
+                            operation));
+                } else {
+                    throw new NullPointerException("localDAte is null");
+                }
                 break;
-            } catch (Exception e) {
+            } catch (NullPointerException | NoSuchElementException | NumberFormatException e) {
                 ui.showException(e);
             }
         }

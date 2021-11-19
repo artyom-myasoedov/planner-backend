@@ -1,15 +1,14 @@
-package ru.vsu.UI.function.impl;
+package ru.vsu.UI.command.impl;
 
 import ru.vsu.UI.EntityCollectionUI;
+import ru.vsu.UI.command.Command;
 import ru.vsu.dao.entity.EventType;
 import ru.vsu.di.annotation.Component;
 import ru.vsu.di.annotation.InjectByType;
 import ru.vsu.service.EventService;
 
-import java.util.function.Function;
-
 @Component
-public class GetAllByMonthFunction implements Function<EventType, Boolean> {
+public class GetAllByMonthCommand implements Command<EventType, Boolean> {
 
     @InjectByType
     private EntityCollectionUI ui;
@@ -25,10 +24,10 @@ public class GetAllByMonthFunction implements Function<EventType, Boolean> {
         try {
             month = Integer.parseInt(input);
             if (month < 1 || month > 12) {
-                throw new RuntimeException("Invalid month");
+                throw new IllegalArgumentException("Invalid month: " + input);
             }
             ui.showEntityCollection(service.findByMonth(month - 1, EventType.toList(eventType)));
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             ui.showException(e);
             apply(eventType);
         }

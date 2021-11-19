@@ -12,11 +12,11 @@ import java.util.stream.Collectors;
 
 public class BeanFactory {
     private final ApplicationContext context;
-    private final List<BeanPostProcessor> configurators;
+    private final List<BeanPostProcessor> postProcessors;
 
     public BeanFactory(ApplicationContext context) {
         this.context = context;
-        configurators = context.getConfig().getScanner().getSubTypesAnnotatedBy(BeanPostProcessor.class, Component.class)
+        postProcessors = context.getConfig().getScanner().getSubTypesAnnotatedBy(BeanPostProcessor.class, Component.class)
                 .stream()
                 .map(aClass -> {
                     try {
@@ -62,7 +62,7 @@ public class BeanFactory {
     }
 
     private <T> void configure(T t) {
-        configurators.forEach(objectConfigurator -> objectConfigurator.configure(t, context));
+        postProcessors.forEach(objectConfigurator -> objectConfigurator.configure(t, context));
     }
 
     private <T> T create(Class<T> implClass) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {

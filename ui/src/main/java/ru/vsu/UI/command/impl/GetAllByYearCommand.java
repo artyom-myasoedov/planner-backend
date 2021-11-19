@@ -1,17 +1,16 @@
-package ru.vsu.UI.function.impl;
+package ru.vsu.UI.command.impl;
 
 import ru.vsu.UI.EntityCollectionUI;
+import ru.vsu.UI.command.Command;
 import ru.vsu.dao.entity.EventType;
 import ru.vsu.di.annotation.Component;
 import ru.vsu.di.annotation.InjectByType;
 import ru.vsu.service.EventService;
-import ru.vsu.service.TimeComparisonOperation;
 
 import java.time.LocalDate;
-import java.util.function.Function;
 
 @Component
-public class GetAllByYearFunction implements Function<EventType, Boolean> {
+public class GetAllByYearCommand implements Command<EventType, Boolean> {
     @InjectByType
     private EntityCollectionUI ui;
 
@@ -26,10 +25,10 @@ public class GetAllByYearFunction implements Function<EventType, Boolean> {
         try {
             year = Integer.parseInt(input);
             if (year < 1 || year > LocalDate.now().getYear() + 100) {
-                throw new RuntimeException("Invalid year");
+                throw new IllegalArgumentException("Invalid year: " + year);
             }
             ui.showEntityCollection(service.findByYear(year, EventType.toList(eventType)));
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             ui.showException(e);
             apply(eventType);
         }

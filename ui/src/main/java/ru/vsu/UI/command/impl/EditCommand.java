@@ -1,5 +1,6 @@
-package ru.vsu.UI.function.impl;
+package ru.vsu.UI.command.impl;
 
+import ru.vsu.UI.command.Command;
 import ru.vsu.UI.impl.DefaultConsoleUI;
 import ru.vsu.dao.entity.Event;
 import ru.vsu.dao.entity.EventType;
@@ -9,10 +10,9 @@ import ru.vsu.di.annotation.InjectFromProperties;
 import ru.vsu.service.EventService;
 
 import java.util.Map;
-import java.util.function.Function;
 
 @Component
-public class EditFunction implements Function<EventType, Boolean> {
+public class EditCommand implements Command<EventType, Boolean> {
 
     @InjectByType
     private DefaultConsoleUI ui;
@@ -21,7 +21,7 @@ public class EditFunction implements Function<EventType, Boolean> {
     private EventService service;
 
     @InjectFromProperties
-    private Map<EventType, Function<Event, Event>> editors;
+    private Map<EventType, Command<Event, Event>> editors;
 
     @Override
     public Boolean apply(EventType eventType) {
@@ -33,7 +33,7 @@ public class EditFunction implements Function<EventType, Boolean> {
             entity = editors.get(entity.getEventType()).apply(entity);
             service.update(entity);
             ui.showMessage("Операция завершена\n");
-        } catch (Exception e) {
+        } catch (NumberFormatException | NullPointerException e) {
             ui.showException(e);
             apply(eventType);
         }

@@ -1,15 +1,14 @@
-package ru.vsu.UI.function.impl;
+package ru.vsu.UI.command.impl;
 
 import ru.vsu.UI.EntityCollectionUI;
+import ru.vsu.UI.command.Command;
 import ru.vsu.dao.entity.EventType;
 import ru.vsu.di.annotation.Component;
 import ru.vsu.di.annotation.InjectByType;
 import ru.vsu.service.EventService;
 
-import java.util.function.Function;
-
 @Component
-public class GetAllFunction implements Function<EventType, Boolean> {
+public class GetAllCommand implements Command<EventType, Boolean> {
     @InjectByType
     private EntityCollectionUI ui;
 

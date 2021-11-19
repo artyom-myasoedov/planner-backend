@@ -1,16 +1,17 @@
-package ru.vsu.UI.suppliers.impl;
+package ru.vsu.UI.creator.impl;
 
 import ru.vsu.UI.impl.DefaultConsoleUI;
-import ru.vsu.dao.entity.Birthday;
+import ru.vsu.UI.creator.EntityCreator;
 import ru.vsu.dao.entity.Event;
+import ru.vsu.dao.entity.Meeting;
 import ru.vsu.di.annotation.Component;
 import ru.vsu.di.annotation.InjectByType;
 
 import java.time.LocalDateTime;
-import java.util.function.Supplier;
+import java.time.format.DateTimeParseException;
 
 @Component
-public class BirthdayCreationSupplier implements Supplier<Event> {
+public class MeetingConsoleCreator implements EntityCreator<Event> {
 
     @InjectByType
     private DefaultConsoleUI ui;
@@ -18,23 +19,26 @@ public class BirthdayCreationSupplier implements Supplier<Event> {
 
     @Override
     public Event get() {
-        Birthday entity = new Birthday();
-        ui.showMessage("Добавление события: День Рождения");
+        Meeting entity = new Meeting();
+
+        ui.showMessage("Добавление события: Важная встреча");
         entity.setId(getIntProperty("Введите Id для записи"));
-        entity.setName(getStringProperty("Введите имя именинника"));
-        entity.setPresent(getStringProperty("Введите подарок для именинника"));
+        entity.setName(getStringProperty("Введите имя собеседника"));
         entity.setDescription(getStringProperty("Введите описание события"));
-        entity.setDateTime(getDateTimeProperty("Введите дату и время Дня Рождения в формате YYYY-MM-dd HH:mm"));
+        entity.setDateTime(getDateTimeProperty("Введите дату и время события в формате YYYY-MM-dd HH:mm"));
+
         return entity;
     }
 
     private Integer getIntProperty(String message) {
         ui.showMessage(message);
         Integer res = null;
+        String input = null;
         try {
-            res = Integer.parseInt(ui.getInput());
-        } catch (Exception e) {
-            ui.showException(new RuntimeException("Invalid input"));
+            input = ui.getInput();
+            res = Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            ui.showException(new RuntimeException("Invalid input: " + input, e));
             getIntProperty(message);
         }
         return res;
@@ -43,11 +47,12 @@ public class BirthdayCreationSupplier implements Supplier<Event> {
     private LocalDateTime getDateTimeProperty(String message) {
         ui.showMessage(message);
         LocalDateTime res = null;
+        String input = null;
         try {
-            String input = ui.getInput().replace(' ', 'T');
+            input = ui.getInput().replace(' ', 'T');
             res = LocalDateTime.parse(input);
-        } catch (Exception e) {
-            ui.showException(new RuntimeException("Invalid input"));
+        } catch (DateTimeParseException e) {
+            ui.showException(new RuntimeException("Invalid input: " + input, e));
             getIntProperty(message);
         }
         return res;
@@ -59,11 +64,12 @@ public class BirthdayCreationSupplier implements Supplier<Event> {
         try {
             res = ui.getInput();
             if (res.isBlank())
-                throw new RuntimeException("String property can't be blank");
-        } catch (Exception e) {
+                throw new IllegalArgumentException("String property can't be blank");
+        } catch (IllegalArgumentException e) {
             ui.showException(e);
             getIntProperty(message);
         }
         return res;
     }
 }
+

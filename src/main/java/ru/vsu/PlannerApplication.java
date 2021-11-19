@@ -16,10 +16,9 @@ public class PlannerApplication {
                 "ru.vsu.service",
                 "ru.vsu.UI",
         };
-        ApplicationContext context = Application.run(packagesToScan, new HashMap<>() {{
+        Application.run(packagesToScan, new HashMap<>() {{
             put(Map.class, Set.of(HashMap.class));
-        }}, "application.yaml");
-        context.getBean(PlannerLifeCycle.class).start();
+        }}, "application.yaml", PlannerLifeCycle.class);
     }
 }
 

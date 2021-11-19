@@ -1,5 +1,6 @@
-package ru.vsu.UI.function.impl;
+package ru.vsu.UI.command.impl;
 
+import ru.vsu.UI.command.Command;
 import ru.vsu.UI.impl.DefaultConsoleUI;
 import ru.vsu.dao.entity.Event;
 import ru.vsu.di.annotation.Component;
@@ -7,56 +8,55 @@ import ru.vsu.di.annotation.InjectByType;
 import ru.vsu.di.annotation.PostConstruct;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 @Component
-public class EditMeetingFunction implements Function<Event, Event> {
+public class EditMeetingCommand implements Command<Event, Event> {
 
     @InjectByType
     private DefaultConsoleUI ui;
 
     @InjectByType
-    private Map<Integer, Function<Event, Boolean>> editFunctions;
+    private Map<Integer, Command<Event, Boolean>> editCommands;
 
     @PostConstruct
     public void init() {
-        editFunctions.put(0, (event -> {
+        editCommands.put(0, (event -> {
             ui.showMessage("Введите дату и время встречи в формате YYYY-MM-dd HH:mm");
             try {
                 String input = ui.getInput();
                 LocalDateTime ldt = LocalDateTime.parse(input.replace(' ', 'T'));
                 event.setDateTime(ldt);
-            } catch (Exception e) {
+            } catch (DateTimeParseException e) {
                 ui.showException(e);
-                editFunctions.get(0).apply(event);
+                editCommands.get(0).apply(event);
             }
             return true;
         }));
-        editFunctions.put(1, (event -> {
+        editCommands.put(1, (event -> {
             ui.showMessage("Введите имя собеседника");
             try {
                 String input = ui.getInput();
                 event.setName(input);
             } catch (Exception e) {
                 ui.showException(e);
-                editFunctions.get(1).apply(event);
+                editCommands.get(1).apply(event);
             }
             return true;
         }));
-        editFunctions.put(2, (event -> {
+        editCommands.put(2, (event -> {
             ui.showMessage("Введите описание встречи");
             try {
                 String input = ui.getInput();
                 event.setDescription(input);
             } catch (Exception e) {
                 ui.showException(e);
-                editFunctions.get(2).apply(event);
+                editCommands.get(2).apply(event);
             }
             return true;
         }));
-        editFunctions.put(3, (event -> false));
+        editCommands.put(3, (event -> false));
     }
 
     private final String EDIT_MENU = "Редактирование события: Важная встреча\n" +
@@ -76,8 +76,8 @@ public class EditMeetingFunction implements Function<Event, Event> {
             try {
                 input = ui.getInput();
                 numberInput = Integer.parseInt(input);
-                isEditing = editFunctions.get(numberInput).apply(event);
-            } catch (Exception e) {
+                isEditing = editCommands.get(numberInput).apply(event);
+            } catch (NullPointerException | NumberFormatException e) {
                 ui.showException(e);
             }
         }
