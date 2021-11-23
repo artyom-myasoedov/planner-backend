@@ -1,12 +1,12 @@
 package ru.vsu;
 
-import ru.vsu.UI.PlannerLifeCycle;
 import ru.vsu.dao.entity.Birthday;
-import ru.vsu.dao.entity.Event;
+import ru.vsu.dao.entity.EventType;
+import ru.vsu.dao.repository.EventRepository;
 import ru.vsu.di.Application;
+import ru.vsu.di.context.ApplicationContext;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class PlannerApplication {
@@ -19,9 +19,19 @@ public class PlannerApplication {
                 "ru.vsu.service",
                 "ru.vsu.UI",
         };
-//        Application.run(packagesToScan, new HashMap<>() {{
-//            put(Map.class, Set.of(HashMap.class));
-//        }}, "application.yaml", PlannerLifeCycle.class);
+
+        ApplicationContext context = Application.run(packagesToScan, new HashMap<>() {{
+            put(Map.class, Set.of(HashMap.class));
+        }}, "application.yaml", ApplicationRunnerImplTest.class);
+        EventRepository rep = context.getBean(EventRepository.class);
+        //rep.findByNameLikeAndEventTypeContains("", List.of(EventType.BIRTHDAY)).forEach(System.out::println);
+        Birthday birthday = new Birthday();
+        birthday.setPresent("  sssss");
+        birthday.setDateTime(LocalDateTime.now());
+        birthday.setDescription("eeeee");
+        birthday.setName("kgejngrenkse");
+        birthday.setId(23);
+        rep.update(birthday);
 
     }
 }

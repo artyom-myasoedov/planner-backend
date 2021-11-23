@@ -92,7 +92,7 @@ public class PlannerLifeCycle implements ApplicationRunner {
                 }
 
                 if (Objects.equals(EventType.ANY, currEventType))
-                    if (numberInput > 7)
+                    if (numberInput > 8)
                         throw new IllegalArgumentException("Invalid operation: " + numberInput);
                     else numberInput += 2;
 

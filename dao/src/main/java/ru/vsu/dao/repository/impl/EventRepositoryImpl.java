@@ -2,13 +2,13 @@ package ru.vsu.dao.repository.impl;
 
 import ru.vsu.dao.db.ConnectionManager;
 import ru.vsu.dao.db.SubClassSQLMapper;
+import ru.vsu.dao.db.annotation.Column;
+import ru.vsu.dao.db.executor.QueryExecutor;
 import ru.vsu.dao.entity.Birthday;
 import ru.vsu.dao.entity.Event;
 import ru.vsu.dao.entity.EventType;
 import ru.vsu.dao.entity.Meeting;
-import ru.vsu.dao.persistence.Condition;
-import ru.vsu.dao.persistence.Extractor;
-import ru.vsu.dao.persistence.ExtractorImpl;
+import ru.vsu.dao.persistence.*;
 import ru.vsu.dao.repository.EventRepository;
 import ru.vsu.di.annotation.Component;
 import ru.vsu.di.annotation.InjectByType;
@@ -25,88 +25,114 @@ public class EventRepositoryImpl implements EventRepository {
 
     private Extractor extractor;
 
+    private Executor executor;
+
+    public EventRepositoryImpl() {
+    }
+
 
     @PostConstruct
     public void init() {
-        extractor = new ExtractorImpl("planner.events", new SubClassSQLMapper("date_time",
+        var mapper = new SubClassSQLMapper("event_type_id",
                 Event.class,
                 Map.of(0, Birthday.class, 1, Meeting.class),
-                Map.of(),
-                Map.of()
-        ));
+                getColumnNamesToFields(Event.class),
+                Map.of(Birthday.class, getColumnNamesToFields(Birthday.class), Meeting.class, getColumnNamesToFields(Meeting.class))
+        );
+        extractor = new ExtractorImpl("planner.events", mapper);
+        executor = new ExecutorImpl(mapper);
     }
+
 
     @Override
     public Collection<Event> findByEventTypeContains(List<EventType> types) {
         return (Collection<Event>) extractor.extract(connectionManager.getConnection(),
-                List.of(new Condition("event_type", types, "ContainsIn")));
+                List.of(new Condition("event_type_id", types, "ContainsIn")));
     }
 
     @Override
     public Collection<Event> findByYearAndByEventTypeContains(Integer year, List<EventType> types) {
-        return null;
+        return (Collection<Event>) executor.execute("SELECT * FROM planner.events WHERE date_part(`year`, date_time) = " + year,
+                Collections.emptyList(), List.of(new Condition("event_type_id", types, "ContainsIn")), connectionManager.getConnection());
     }
 
     @Override
     public Collection<Event> findByMonthAndEventTypeContains(Integer month, List<EventType> types) {
-        return null;
+        return (Collection<Event>) executor.execute("SELECT * FROM planner.events WHERE date_part(`month`, date_time) = " + month,
+                Collections.emptyList(), List.of(new Condition("event_type_id", types, "ContainsIn")), connectionManager.getConnection());
+
     }
 
     @Override
     public Collection<Event> findByNameLikeAndEventTypeContains(String name, List<EventType> types) {
         return (Collection<Event>) extractor.extract(connectionManager.getConnection(),
                 List.of(new Condition("opponent_name", name, "Like"),
-                        new Condition("event_type", types, "ContainsIn")));
+                        new Condition("event_type_id", types, "ContainsIn")));
     }
 
     @Override
     public Collection<Event> findByDateTimeAndEventTypeContains(LocalDateTime dateTime, List<EventType> types) {
         return (Collection<Event>) extractor.extract(connectionManager.getConnection(), List.of(
                 new Condition("date_time", dateTime, "Equal"),
-                new Condition("event_type", types, "ContainsIn")));
+                new Condition("event_type_id", types, "ContainsIn")));
     }
 
     @Override
     public Collection<Event> findByDateTimeGreaterThanAndEventTypeContains(LocalDateTime dateTime, List<EventType> types) {
         return (Collection<Event>) extractor.extract(connectionManager.getConnection(), List.of(
                 new Condition("date_time", dateTime, "GreaterThan"),
-                new Condition("event_type", types, "ContainsIn")));
+                new Condition("event_type_id", types, "ContainsIn")));
     }
 
     @Override
     public Collection<Event> findByDateTimeLessThanAndEventTypeContains(LocalDateTime dateTime, List<EventType> types) {
         return (Collection<Event>) extractor.extract(connectionManager.getConnection(), List.of(
                 new Condition("date_time", dateTime, "LessThan"),
-                new Condition("event_type", types, "ContainsIn")));
+                new Condition("event_type_id", types, "ContainsIn")));
     }
 
     @Override
     public Optional<Event> findById(Integer id) {
-        List<?> retVal = (List<?>) extractor.extract(connectionManager.getConnection(),
+        List<Event> retVal = (List<Event>) extractor.extract(connectionManager.getConnection(),
                 List.of(new Condition("event_id", id, "Equal")));
         if (retVal.isEmpty()) {
             return Optional.empty();
         }
-        return (Optional<Event>) Optional.ofNullable(retVal.get(0));
+        return Optional.of(retVal.get(0));
     }
 
     @Override
     public void add(Event entity) {
-
+        executor.execute("INSERT INTO planner.events  ", List.of(entity),
+                Collections.emptyList(),
+                connectionManager.getConnection());
     }
 
     @Override
     public void update(Event entity) {
-
+        executor.execute("UPDATE planner.events SET ", List.of(entity),
+                List.of(new Condition("event_id", entity.getId(), "Equal")),
+                connectionManager.getConnection());
     }
 
     @Override
     public void deleteById(Integer id) {
+        executor.execute("DELETE FROM planner.events ", Collections.emptyList(),
+                List.of(new Condition("event_id", id, "Equal")),
+                connectionManager.getConnection());
 
     }
 
     @Override
     public Collection<Event> findAll() {
         return (Collection<Event>) extractor.extract(connectionManager.getConnection(), Collections.emptyList());
+    }
+
+
+    private Map<String, String> getColumnNamesToFields(Class<?> modelClass) {
+        Map<String, String> retVal = new HashMap<>();
+        Arrays.stream(modelClass.getDeclaredFields()).forEach(
+                (it) -> retVal.put(it.getAnnotation(Column.class).name(), it.getName()));
+        return retVal;
     }
 }

@@ -2,6 +2,7 @@ package ru.vsu.dao.persistence;
 
 import ru.vsu.dao.entity.EventType;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -53,12 +54,13 @@ public class Condition {
                 .append(condToChar.get(condition))
                 .append(" ");
         if (fieldValue instanceof String || fieldValue instanceof LocalDateTime) {
-//            if (fieldValue instanceof LocalDateTime) {
-//                sb.append("timestamp ");
-//            }
-            sb.append("`")
+            if (fieldValue instanceof LocalDateTime) {
+                fieldValue = Timestamp.valueOf((LocalDateTime) fieldValue);
+                sb.append("timestamp ");
+            }
+            sb.append("'")
                     .append(fieldValue)
-                    .append("`");
+                    .append("'");
         } else sb.append(fieldValue);
         return sb.toString();
     }
@@ -66,9 +68,9 @@ public class Condition {
     private String fromLike(StringBuilder sb) {
         return sb.append(" AND ")
                 .append(columnName)
-                .append(" LIKE `%")
+                .append(" LIKE '%")
                 .append(fieldValue.toString())
-                .append("%`").toString();
+                .append("%'").toString();
     }
 
     private String fromContainsIn(StringBuilder sb) {
@@ -82,6 +84,10 @@ public class Condition {
             });
             sb.append(")");
             sb.replace(0, 3, " AND (");
+            if (list.size() == 1) {
+                sb.replace(sb.indexOf("("), sb.indexOf("(") + 1, "");
+                sb.replace(sb.indexOf(")"), sb.indexOf(")") + 1, "");
+            }
             return sb.toString();
         } catch (ClassCastException e) {
             throw new RuntimeException("Invalid type, exception when class casting", e);

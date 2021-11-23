@@ -35,7 +35,7 @@ public class JPAInvocationHandlerFactory {
         }
         Set<String> fieldNames = fields.stream().map(Field::getName).collect(Collectors.toSet());
         Set<String> conditions = Set.of("Like", "Contains", "GreaterThan", "LessThan", "And");
-        var mapper = new SubClassSQLMapper();
+        var mapper = new SubClassSQLMapper(null, null, null, null, null);
 
         return new JPAInvocationHandler(methodNamesToSQLTemplates,
                 new SQLQueryExecutor(context.getBean(ConnectionManager.class),
