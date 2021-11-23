@@ -1,102 +1,112 @@
 package ru.vsu.dao.repository.impl;
 
-import ru.vsu.dao.db.Storage;
+import ru.vsu.dao.db.ConnectionManager;
+import ru.vsu.dao.db.SubClassSQLMapper;
+import ru.vsu.dao.entity.Birthday;
 import ru.vsu.dao.entity.Event;
 import ru.vsu.dao.entity.EventType;
+import ru.vsu.dao.entity.Meeting;
+import ru.vsu.dao.persistence.Condition;
+import ru.vsu.dao.persistence.Extractor;
+import ru.vsu.dao.persistence.ExtractorImpl;
 import ru.vsu.dao.repository.EventRepository;
 import ru.vsu.di.annotation.Component;
 import ru.vsu.di.annotation.InjectByType;
+import ru.vsu.di.annotation.PostConstruct;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Component
 public class EventRepositoryImpl implements EventRepository {
 
     @InjectByType
-    private Storage storage;
+    private ConnectionManager connectionManager;
+
+    private Extractor extractor;
 
 
-    private Stream<Event> getDataStreamFilteredByTypes(List<EventType> types) {
-        return storage.getEvents().values().stream()
-                .filter(event -> types.contains(event.getEventType()));
+    @PostConstruct
+    public void init() {
+        extractor = new ExtractorImpl("planner.events", new SubClassSQLMapper("date_time",
+                Event.class,
+                Map.of(0, Birthday.class, 1, Meeting.class),
+                Map.of(),
+                Map.of()
+        ));
     }
 
     @Override
-    public Collection<Event> findByTypes(List<EventType> types) {
-        return getDataStreamFilteredByTypes(types)
-                .collect(Collectors.toList());
+    public Collection<Event> findByEventTypeContains(List<EventType> types) {
+        return (Collection<Event>) extractor.extract(connectionManager.getConnection(),
+                List.of(new Condition("event_type", types, "ContainsIn")));
     }
 
     @Override
-    public Collection<Event> findByYear(Integer year, List<EventType> types) {
-        return getDataStreamFilteredByTypes(types)
-                .filter(event -> event.getDateTime().getYear() == year)
-                .collect(Collectors.toList());
+    public Collection<Event> findByYearAndByEventTypeContains(Integer year, List<EventType> types) {
+        return null;
     }
 
     @Override
-    public Collection<Event> findByMonth(Integer month, List<EventType> types) {
-        return getDataStreamFilteredByTypes(types)
-                .filter(event -> event.getDateTime().getMonthValue() == month)
-                .collect(Collectors.toList());
+    public Collection<Event> findByMonthAndEventTypeContains(Integer month, List<EventType> types) {
+        return null;
     }
 
     @Override
-    public Collection<Event> findByDay(Integer month, Integer day, List<EventType> types) {
-        return getDataStreamFilteredByTypes(types)
-                .filter(event -> event.getDateTime().getMonthValue() == month
-                        && event.getDateTime().getDayOfMonth() == day)
-                .collect(Collectors.toList());
+    public Collection<Event> findByNameLikeAndEventTypeContains(String name, List<EventType> types) {
+        return (Collection<Event>) extractor.extract(connectionManager.getConnection(),
+                List.of(new Condition("opponent_name", name, "Like"),
+                        new Condition("event_type", types, "ContainsIn")));
     }
 
     @Override
-    public Collection<Event> findByDay(Integer year, Integer month, Integer day, List<EventType> types) {
-        return getDataStreamFilteredByTypes(types)
-                .filter(event -> event.getDateTime().getMonthValue() == month
-                        && event.getDateTime().getDayOfMonth() == day
-                        && event.getDateTime().getYear() == year)
-                .collect(Collectors.toList());
+    public Collection<Event> findByDateTimeAndEventTypeContains(LocalDateTime dateTime, List<EventType> types) {
+        return (Collection<Event>) extractor.extract(connectionManager.getConnection(), List.of(
+                new Condition("date_time", dateTime, "Equal"),
+                new Condition("event_type", types, "ContainsIn")));
     }
 
     @Override
-    public Collection<Event> findAfterDay(Integer year, Integer month, Integer day, List<EventType> types) {
-        return getDataStreamFilteredByTypes(types)
-                .filter(event -> event.getDateTime().getMonthValue() > month
-                        && event.getDateTime().getDayOfMonth() > day
-                        && event.getDateTime().getYear() > year)
-                .collect(Collectors.toList());
+    public Collection<Event> findByDateTimeGreaterThanAndEventTypeContains(LocalDateTime dateTime, List<EventType> types) {
+        return (Collection<Event>) extractor.extract(connectionManager.getConnection(), List.of(
+                new Condition("date_time", dateTime, "GreaterThan"),
+                new Condition("event_type", types, "ContainsIn")));
     }
 
     @Override
-    public Collection<Event> findBeforeDay(Integer year, Integer month, Integer day, List<EventType> types) {
-        return getDataStreamFilteredByTypes(types)
-                .filter(event -> event.getDateTime().getMonthValue() < month
-                        && event.getDateTime().getDayOfMonth() < day
-                        && event.getDateTime().getYear() < year)
-                .collect(Collectors.toList());
+    public Collection<Event> findByDateTimeLessThanAndEventTypeContains(LocalDateTime dateTime, List<EventType> types) {
+        return (Collection<Event>) extractor.extract(connectionManager.getConnection(), List.of(
+                new Condition("date_time", dateTime, "LessThan"),
+                new Condition("event_type", types, "ContainsIn")));
     }
 
     @Override
     public Optional<Event> findById(Integer id) {
-        return Optional.ofNullable(storage.getEvents().get(id));
+        List<?> retVal = (List<?>) extractor.extract(connectionManager.getConnection(),
+                List.of(new Condition("event_id", id, "Equal")));
+        if (retVal.isEmpty()) {
+            return Optional.empty();
+        }
+        return (Optional<Event>) Optional.ofNullable(retVal.get(0));
     }
 
     @Override
-    public Event save(Event entity) {
-        return storage.getEvents().put(entity.getId(), entity);
+    public void add(Event entity) {
+
+    }
+
+    @Override
+    public void update(Event entity) {
+
     }
 
     @Override
     public void deleteById(Integer id) {
-        storage.getEvents().remove(id);
+
     }
 
     @Override
     public Collection<Event> findAll() {
-        return storage.getEvents().values();
+        return (Collection<Event>) extractor.extract(connectionManager.getConnection(), Collections.emptyList());
     }
 }

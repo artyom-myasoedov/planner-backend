@@ -1,14 +1,17 @@
 package ru.vsu;
 
 import ru.vsu.UI.PlannerLifeCycle;
+import ru.vsu.dao.entity.Birthday;
+import ru.vsu.dao.entity.Event;
 import ru.vsu.di.Application;
-import ru.vsu.di.context.ApplicationContext;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class PlannerApplication {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Throwable {
         String[] packagesToScan = {
                 "ru.vsu",
                 "ru.vsu.di",
@@ -16,9 +19,10 @@ public class PlannerApplication {
                 "ru.vsu.service",
                 "ru.vsu.UI",
         };
-        Application.run(packagesToScan, new HashMap<>() {{
-            put(Map.class, Set.of(HashMap.class));
-        }}, "application.yaml", PlannerLifeCycle.class);
+//        Application.run(packagesToScan, new HashMap<>() {{
+//            put(Map.class, Set.of(HashMap.class));
+//        }}, "application.yaml", PlannerLifeCycle.class);
+
     }
 }
 

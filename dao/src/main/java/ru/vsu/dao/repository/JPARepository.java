@@ -3,13 +3,16 @@ package ru.vsu.dao.repository;
 import java.util.Collection;
 import java.util.Optional;
 
-public interface Repository<T, K> {
+
+public interface JPARepository<T, K> {
 
     Optional<T> findById(K id);
 
-    T save(T entity);
+    void add(T entity);
 
-    void deleteById(Integer id);
+    void update(T entity);
+
+    void deleteById(K id);
 
     Collection<T> findAll();
 

@@ -1,6 +1,8 @@
 package ru.vsu.dao.entity;
 
+import ru.vsu.dao.db.annotation.Entity;
 
+@Entity
 public class Meeting extends Event {
 
     public Meeting() {

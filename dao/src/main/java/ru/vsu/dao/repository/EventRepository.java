@@ -1,25 +1,31 @@
 package ru.vsu.dao.repository;
 
+import ru.vsu.dao.db.annotation.Query;
 import ru.vsu.dao.entity.Event;
 import ru.vsu.dao.entity.EventType;
+import ru.vsu.dao.db.annotation.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-public interface EventRepository extends Repository<Event, Integer> {
+@Repository
+public interface EventRepository extends JPARepository<Event, Integer> {
 
-    Collection<Event> findByTypes(List<EventType> types);
+    Collection<Event> findByEventTypeContains(List<EventType> types);
 
-    Collection<Event> findByYear(Integer year, List<EventType> types);
+    @Query(query = "")
+    Collection<Event> findByYearAndByEventTypeContains(Integer year, List<EventType> types);
 
-    Collection<Event> findByMonth(Integer month, List<EventType> types);
+    @Query(query = "")
+    Collection<Event> findByMonthAndEventTypeContains(Integer month, List<EventType> types);
 
-    Collection<Event> findByDay(Integer month, Integer day, List<EventType> types);
+    Collection<Event> findByNameLikeAndEventTypeContains(String name, List<EventType> types);
 
-    Collection<Event> findByDay(Integer year, Integer month, Integer day, List<EventType> types);
+    Collection<Event> findByDateTimeAndEventTypeContains(LocalDateTime dateTime, List<EventType> types);
 
-    Collection<Event> findAfterDay(Integer year, Integer month, Integer day, List<EventType> types);
+    Collection<Event> findByDateTimeGreaterThanAndEventTypeContains(LocalDateTime dateTime, List<EventType> types);
 
-    Collection<Event> findBeforeDay(Integer year, Integer month, Integer day, List<EventType> types);
+    Collection<Event> findByDateTimeLessThanAndEventTypeContains(LocalDateTime dateTime, List<EventType> types);
 
 }

@@ -11,8 +11,9 @@ public enum Action {
     GET_BY_YEAR(5),
     GET_BY_MONTH(6),
     GET_BY_DATE(7),
-    CHANGE_CURRENT_EVENT_TYPE(8),
-    EXIT(9);
+    GET_BY_NAME(8),
+    CHANGE_CURRENT_EVENT_TYPE(9),
+    EXIT(10);
 
     private final Integer number;
 

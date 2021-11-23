@@ -55,7 +55,7 @@ public class GetAllByDateCommand implements Command<EventType, Boolean> {
                             EventType.toList(eventType),
                             operation));
                 } else {
-                    throw new NullPointerException("localDAte is null");
+                    throw new NullPointerException("localDate is null");
                 }
                 break;
             } catch (NullPointerException | NoSuchElementException | NumberFormatException e) {

@@ -1,10 +1,12 @@
 package ru.vsu.dao.entity;
 
-import java.time.LocalDate;
-import java.util.Objects;
+import ru.vsu.dao.db.annotation.Column;
+import ru.vsu.dao.db.annotation.Entity;
 
+@Entity
 public class Birthday  extends Event{
 
+    @Column(name = "present")
     private String present;
 
     public Birthday() {

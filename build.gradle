@@ -17,5 +17,6 @@ allprojects {
 dependencies {
     implementation (project(':ui'))
     implementation (project(':di'))
+    implementation (project(':dao'))
     implementation 'org.yaml:snakeyaml:1.29'
 }

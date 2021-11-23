@@ -24,7 +24,7 @@ public interface EventService {
 
     Collection<Event> findByMonth(Integer month, List<EventType> types);
 
-    Collection<Event> findByMonthAndDay(Integer month, Integer day, List<EventType> types);
+    Collection<Event> findByNameLike(String name, List<EventType> types);
 
     Collection<Event> findByDate(Integer year, Integer month, Integer day, List<EventType> types, TimeComparisonOperation operation);
 }
