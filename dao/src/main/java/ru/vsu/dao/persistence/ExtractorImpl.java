@@ -30,7 +30,8 @@ public class ExtractorImpl implements Extractor {
         }
         stringBuilder.append(";");
         int i = stringBuilder.indexOf("AND ");
-        stringBuilder.replace(i, i + 4, "");
+        if (i > -1)
+            stringBuilder.replace(i, i + 4, "");
         try {
             Statement statement = connection.createStatement();
             ResultSet rs = statement.executeQuery(stringBuilder.toString());
