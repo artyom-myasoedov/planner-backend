@@ -52,13 +52,13 @@ public class EventRepositoryImpl implements EventRepository {
 
     @Override
     public Collection<Event> findByYearAndByEventTypeContains(Integer year, List<EventType> types) {
-        return (Collection<Event>) executor.execute("SELECT * FROM planner.events WHERE date_part(`year`, date_time) = " + year,
+        return (Collection<Event>) executor.execute("SELECT * FROM planner.events WHERE date_part('year', date_time) = " + year,
                 Collections.emptyList(), List.of(new Condition("event_type_id", types, "ContainsIn")), connectionManager.getConnection());
     }
 
     @Override
     public Collection<Event> findByMonthAndEventTypeContains(Integer month, List<EventType> types) {
-        return (Collection<Event>) executor.execute("SELECT * FROM planner.events WHERE date_part(`month`, date_time) = " + month,
+        return (Collection<Event>) executor.execute("SELECT * FROM planner.events WHERE date_part('month', date_time) = " + month,
                 Collections.emptyList(), List.of(new Condition("event_type_id", types, "ContainsIn")), connectionManager.getConnection());
 
     }
